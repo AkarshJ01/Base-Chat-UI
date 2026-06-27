@@ -4,28 +4,51 @@ from langchain.tools import tool
 from langchain_core.messages import HumanMessage, SystemMessage , ToolMessage
 import requests
 
+import feedparser
 
 LLM = "gpt-oss:20b"
+
+# @tool
+# def check_news()->str:
+#     """Fetches real-time headlines and current event articles from the web.
+#         Use this tool whenever the user asks for the latest news, updates, or current events."""
+    
+#     print("News Summary \n")
+
+#     # target_url = "https://www.bloomberg.com/technology"
+#     target_url = "https://www.techmeme.com/"
+
+#     jina_url = f"https://r.jina.ai/{target_url}"
+
+#     headers = {
+#         "x-no-cache": "true"
+#     }
+
+#     response = requests.get(jina_url, headers=headers)
+
+#     return response.text
+
 
 @tool
 def check_news()->str:
     """Fetches real-time headlines and current event articles from the web.
         Use this tool whenever the user asks for the latest news, updates, or current events."""
     
-    print("News Summary \n")
+    feed_url = "https://feeds.bloomberg.com/technology/news.rss"
+    feed = feedparser.parse(feed_url)
 
-    # target_url = "https://www.bloomberg.com/technology"
-    target_url = "https://www.techmeme.com/"
+    print(f"Feed Title: {feed.feed.title}\n")
 
-    jina_url = f"https://r.jina.ai/{target_url}"
+    formatted_articles = ""
+    for entry in feed.entries[:5]:
+        formatted_articles += f"Title: {entry.title}\n"
+        formatted_articles += f"Summary: {entry.summary if 'summary' in entry else 'N/A'}\n"
+        formatted_articles += f"Link: {entry.link}\n"
+        formatted_articles += "-------------------\n"
 
-    headers = {
-        "x-no-cache": "true"
-    }
+    # print(formatted_articles)
+    return formatted_articles
 
-    response = requests.get(jina_url, headers=headers)
-
-    return response.text
 
 
 
@@ -41,7 +64,7 @@ def run_agent(prompt:str):
 
     messages = [
         SystemMessage(
-            content = ( "You are an expert news analyst and research assistant. "
+            content = ( "You are an expert research assistant. "
                         "Your primary goal is to provide the user with the latest current events.\n\n"
 
                         "CRITICAL ROUTING INSTRUCTIONS:\n"
@@ -52,8 +75,7 @@ def run_agent(prompt:str):
 
                         "OUTPUT FORMATTING:\n"
                         "- When you receive the raw data from the news tool, DO NOT output the raw JSON or messy text.\n"
-                        "- Instead, process the data and provide a clean, highly structured, and actionable summary "
-                        "for the user using clear bullet points.")
+                        "- Instead, process the data and tell in one line what is your summary of the news")
         ),
         HumanMessage(content=prompt)
     ]
