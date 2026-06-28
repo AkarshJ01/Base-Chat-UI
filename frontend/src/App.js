@@ -23,7 +23,7 @@ function App() {
       const response = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage })
+        body: JSON.stringify({ prompt: userMessage }) // Change 'message' to 'prompt'
       });
 
       if (!response.ok) throw new Error(`Network response was not ok (Status: ${response.status}, Text: ${response.statusText})`);
@@ -31,7 +31,7 @@ function App() {
       const data = await response.json();
       
       // Adjust data parsing depending on your exact FastAPI response key (e.g., data.response or data.reply)
-      const botReply = data.response || data.reply || JSON.stringify(data);
+      const botReply = data.response || JSON.stringify(data);
 
       setMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
     } catch (error) {
