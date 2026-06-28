@@ -41,7 +41,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ function App() {
               <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Gemini
+            Chat-Ai
           </h1>
         </div>
         
@@ -163,14 +163,13 @@ function App() {
 
         {/* Input Area */}
         <div className="input-container">
-          <div className="input-wrapper">
+          <form onSubmit={handleSubmit} className="input-wrapper">
             <div className="pill-input">
               <span className="input-placeholder">Ask News Agent</span>
               <div className="model-indicator">Flash</div>
             </div>
             <button
               type="submit"
-              onClick={handleSubmit}
               disabled={isLoading || !inputValue.trim()}
               className="send-button"
             >
@@ -178,7 +177,7 @@ function App() {
                 <path d="M12 4L20 12L12 20L4 12L12 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
