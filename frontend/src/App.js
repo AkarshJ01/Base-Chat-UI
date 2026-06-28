@@ -1,185 +1,105 @@
-import React, { useState, useRef, useEffect } from 'react';
-import './App.css';
+import React, { useState } from 'react';
 
 function App() {
   const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Hello! I'm your news assistant. Ask me about the latest technology news.",
-      isUser: false
-    }
+    { sender: 'bot', text: "Hello! I'm your news assistant. Ask me about the latest technology news." }
   ]);
-  const [inputValue, setInputValue] = useState('');
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [conversations, setConversations] = useState([
-    { id: 1, title: "Latest Tech News", timestamp: "Today" },
-    { id: 2, title: "AI Developments", timestamp: "Yesterday" },
-  ]);
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!inputValue.trim() || isLoading) return;
+    if (!input.trim() || isLoading) return;
 
-    // Add user message
-    const userMessage = {
-      id: Date.now(),
-      text: inputValue,
-      isUser: true
-    };
+    const userMessage = input.trim();
+    setInput('');
     
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    // 1. Append user message
+    setMessages(prev => [...prev, { sender: 'user', text: userMessage }]);
     setIsLoading(true);
 
     try {
+      // 2. Fetch from FastAPI backend
       const response = await fetch('http://127.0.0.1:8000/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: inputValue }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error('Network response was not ok');
+      
       const data = await response.json();
       
-      // Add AI response
-      const aiMessage = {
-        id: Date.now() + 1,
-        text: data.response,
-        isUser: false
-      };
-      
-      setMessages(prev => [...prev, aiMessage]);
+      // Adjust data parsing depending on your exact FastAPI response key (e.g., data.response or data.reply)
+      const botReply = data.response || data.reply || JSON.stringify(data);
+
+      setMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
     } catch (error) {
-      console.error('Error:', error);
-      const errorMessage = {
-        id: Date.now() + 1,
-        text: "Sorry, I encountered an error. Please try again.",
-        isUser: false
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      console.error('Error fetching data:', error);
+      setMessages(prev => [...prev, { sender: 'bot', text: 'Failed to connect to the backend server.' }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const startNewChat = () => {
-    setMessages([
-      {
-        id: 1,
-        text: "Hello! I'm your news assistant. Ask me about the latest technology news.",
-        isUser: false
-      }
-    ]);
-    setInputValue('');
-  };
-
   return (
-    <div className="grid-layout">
-      {/* Left Sidebar */}
-      <div className="left-sidebar">
-        <div className="sidebar-header">
-          <h1>
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Chat-Ai
-          </h1>
-        </div>
-        
-        <button 
-          onClick={startNewChat}
-          className="new-chat-btn"
-        >
-          ➕ New chat
-        </button>
-        
-        <div className="recent-conversations">
-          {conversations.map((conv) => (
-            <div 
-              key={conv.id} 
-              className="conversation-item"
-            >
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 12H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                <path d="M12 16V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              <span className="truncate">{conv.title}</span>
-            </div>
-          ))}
-        </div>
-        
-        <div className="profile-section">
-          <div className="avatar">A</div>
-          <div className="user-info">
-            <div className="username">Akarsh Jaiswal</div>
-            <div className="plan">Free Plan</div>
+    <div className="app-container" style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+      {/* LEFT SIDEBAR */}
+      <aside className="sidebar" style={{ width: '260px', background: '#1e1e1f', display: 'flex', flexDirection: 'column', padding: '20px', justifyContent: 'space-between' }}>
+        <div>
+          <div className="logo" style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff', marginBottom: '20px' }}>Chat-Ai</div>
+          <button className="new-chat-btn" style={{ width: '100%', padding: '12px', background: '#38bdf8', border: 'none', borderRadius: '8px', color: '#000', fontWeight: 'bold', cursor: 'pointer', marginBottom: '20px' }}>
+            + New chat
+          </button>
+          <div className="recent-chats" style={{ color: '#aaa', fontSize: '0.9rem' }}>
+            <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>Recent</p>
+            <div style={{ padding: '8px 0', cursor: 'pointer' }}>+ Latest Tech News</div>
+            <div style={{ padding: '8px 0', cursor: 'pointer' }}>+ AI Developments</div>
           </div>
         </div>
-      </div>
+        <div className="profile-section" style={{ color: '#fff', borderTop: '1px solid #334155', paddingTop: '15px' }}>
+          <div style={{ fontWeight: 'bold' }}>Akarsh Jaiswal</div>
+          <div style={{ fontSize: '0.8rem', color: '#aaa' }}>Free Plan</div>
+        </div>
+      </aside>
 
-      {/* Main Chat Column */}
-      <div className="main-chat">
-        <div className="chat-container">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`chat-message ${message.isUser ? 'user-message' : 'ai-message'}`}
-            >
-              <div className="message-content">
-                {message.text}
-              </div>
+      {/* MAIN CONTENT AREA */}
+      <main className="main-content" style={{ flex: 1, background: '#131314', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', position: 'relative' }}>
+        
+        {/* MESSAGE STREAM */}
+        <div className="chat-stream" style={{ width: '100%', maxWidth: '820px', flex: 1, overflowY: 'auto', paddingBottom: '100px' }}>
+          {messages.map((msg, index) => (
+            <div key={index} className={`message-row ${msg.sender}`} style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontWeight: 'bold', color: msg.sender === 'user' ? '#38bdf8' : '#4ade80', marginBottom: '4px' }}>
+                {msg.sender === 'user' ? 'You' : 'News Agent'}
+              </span>
+              <p style={{ color: '#f3f4f6', margin: 0, lineHeight: '1.6', fontSize: '1.05rem', whiteSpace: 'pre-wrap' }}>
+                {msg.text}
+              </p>
             </div>
           ))}
-          
           {isLoading && (
-            <div className="chat-message ai-message">
-              <div className="message-content">
-                <div className="loading-dots">
-                  <div className="loading-dot"></div>
-                  <div className="loading-dot"></div>
-                  <div className="loading-dot"></div>
-                </div>
-              </div>
+            <div className="loading" style={{ color: '#aaa', fontStyle: 'italic' }}>
+              Fetching latest briefings...
             </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
-        <div className="input-container">
-          <form onSubmit={handleSubmit} className="input-wrapper">
-            <div className="pill-input">
-              <span className="input-placeholder">Ask News Agent</span>
-              <div className="model-indicator">Flash</div>
-            </div>
-            <button
-              type="submit"
-              disabled={isLoading || !inputValue.trim()}
-              className="send-button"
-            >
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 4L20 12L12 20L4 12L12 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-          </form>
-        </div>
-      </div>
+        {/* PINNED INPUT FORM */}
+        <form onSubmit={handleSubmit} style={{ position: 'absolute', bottom: '30px', width: '100%', maxWidth: '820px', display: 'flex', gap: '10px', background: '#1e1e1f', padding: '6px 12px', borderRadius: '28px', alignItems: 'center' }}>
+          <input 
+            type="text" 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask News Agent" 
+            style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', padding: '12px', fontSize: '1rem', outline: 'none' }}
+          />
+          <span style={{ background: '#334155', color: '#38bdf8', padding: '4px 12px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold' }}>Flash</span>
+          <button type="submit" style={{ background: '#38bdf8', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#000', fontWeight: 'bold' }}>
+            ➔
+          </button>
+        </form>
+      </main>
     </div>
   );
 }
