@@ -1,18 +1,88 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+/* Premium Dark Mode Chat UI Fallback styling */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #0f172a;
+  color: #f8fafc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Base resets to clear the ugly unstyled layouts */
+div, input, button, h1 {
+  box-sizing: border-box;
+}
+
+/* Force standard fallback layouts on the existing HTML tags */
+#root {
+  width: 100%;
+  max-width: 650px;
+  padding: 20px;
+}
+
+/* The Chat Container Window */
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+h1 + div, .online-status {
+  text-align: center;
+  color: #4ade80;
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+
+/* Flex layout for the entire feed box */
+form {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+input[type="text"] {
+  flex: 1;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+  border-color: #38bdf8;
+}
+
+button {
+  background-color: #38bdf8;
+  color: #0f172a;
+  font-weight: 600;
+  padding: 0 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #7dd3fc;
+}
+
+/* Generic container target assuming standard mapping */
+div {
+  transition: all 0.2s ease;
+}
+
+/* Fallback styling targets for text layers inside the wrapper */
+p, span {
+  line-height: 1.5;
 }
