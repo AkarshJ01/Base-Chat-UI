@@ -85,9 +85,9 @@ async def run_agent(prompt: str):
 
     tool_output = tool_to_use.invoke(first_tool_call.get("args", {}))
 
-    if len(tool_output) > 8000:
+    if len(tool_output) > 15000:
         print("[Debug] Warning: Web data is huge! Truncating to 15k characters for local LLM safety.")
-        tool_output = tool_output[:8000]
+        tool_output = tool_output[:15000]
 
     tool_message = ToolMessage(
         content=tool_output,
@@ -98,6 +98,7 @@ async def run_agent(prompt: str):
     ai_response = llm_with_tools.invoke(messages)
     return ai_response.content
 
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
@@ -105,6 +106,7 @@ async def chat(request: ChatRequest):
         return ChatResponse(response=response)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn
