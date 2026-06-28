@@ -201,3 +201,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+.aider*
+
+node_modules/
+frontend/node_modules/
