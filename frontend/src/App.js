@@ -26,7 +26,7 @@ function App() {
         body: JSON.stringify({ message: userMessage })
       });
 
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) throw new Error(`Network response was not ok (Status: ${response.status}, Text: ${response.statusText})`);
       
       const data = await response.json();
       
@@ -36,10 +36,21 @@ function App() {
       setMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
     } catch (error) {
       console.error('Error fetching data:', error);
-      setMessages(prev => [...prev, { sender: 'bot', text: 'Failed to connect to the backend server.' }]);
+      setMessages(prev => [...prev, { sender: 'bot', text: `Network Error: ${error.message}. (Check if FastAPI is running on :8000 and CORS is allowed)` }]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleNewChat = () => {
+    setMessages([
+      { sender: 'bot', text: "Hello! I'm your news assistant. Ask me about the latest technology news." }
+    ]);
+    setInput('');
+  };
+
+  const handleRecentClick = (text) => {
+    setInput(text);
   };
 
   return (
@@ -48,13 +59,13 @@ function App() {
       <aside className="sidebar" style={{ width: '260px', background: '#1e1e1f', display: 'flex', flexDirection: 'column', padding: '20px', justifyContent: 'space-between' }}>
         <div>
           <div className="logo" style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff', marginBottom: '20px' }}>Chat-Ai</div>
-          <button className="new-chat-btn" style={{ width: '100%', padding: '12px', background: '#38bdf8', border: 'none', borderRadius: '8px', color: '#000', fontWeight: 'bold', cursor: 'pointer', marginBottom: '20px' }}>
+          <button className="new-chat-btn" onClick={handleNewChat} style={{ width: '100%', padding: '12px', background: '#38bdf8', border: 'none', borderRadius: '8px', color: '#000', fontWeight: 'bold', cursor: 'pointer', marginBottom: '20px' }}>
             + New chat
           </button>
           <div className="recent-chats" style={{ color: '#aaa', fontSize: '0.9rem' }}>
             <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>Recent</p>
-            <div style={{ padding: '8px 0', cursor: 'pointer' }}>+ Latest Tech News</div>
-            <div style={{ padding: '8px 0', cursor: 'pointer' }}>+ AI Developments</div>
+            <div onClick={() => handleRecentClick("Tell me about the latest tech news")} style={{ padding: '8px 0', cursor: 'pointer' }}>+ Latest Tech News</div>
+            <div onClick={() => handleRecentClick("What are the latest AI developments?")} style={{ padding: '8px 0', cursor: 'pointer' }}>+ AI Developments</div>
           </div>
         </div>
         <div className="profile-section" style={{ color: '#fff', borderTop: '1px solid #334155', paddingTop: '15px' }}>
